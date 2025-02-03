@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "babel src --out-dir public"
   },
   "repository": {
     "type": "git",
@@ -19,9 +20,14 @@
   },
   "homepage": "https://github.com/abhishekjaglan/my-react#readme",
   "dependencies": {
-    "jsdom": "^26.0.0"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-scripts": "^5.0.1"
   },
   "devDependencies": {
-    "@types/jsdom": "^21.1.7"
+    "@babel/cli": "^7.26.4",
+    "@babel/core": "^7.26.7",
+    "@babel/preset-env": "^7.26.7",
+    "@babel/preset-react": "^7.26.3"
   }
 }

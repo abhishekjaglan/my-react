@@ -24,7 +24,8 @@
 
 // container.appendChild(node);
 
-// Step-1
+// Step-1(createElement function)
+
 // This creates my own element that needs to rendered and attached to a parent eventually
 function createElement(type, props, ...children) {
     return {
@@ -51,9 +52,32 @@ function createTextElement(text) {
     }
 }
 
+function render(element, container) {
+    // creating dom nodes and adding them to DOM
+    const domNode =
+        element.type === "TEXT_ELEMENT"
+            ? document.createTextNode("")
+            : document.createElement(element.type);
+
+    const isProperty = key => key !== "children"
+    Object.keys(element.props)
+        .filter(isProperty)
+        .forEach(name => {
+            dom[name] = element.props[name]
+        })
+
+    // each child of element is created its own domNode and attached to its parent
+    element.props.children.forEach(child => {
+        render(child, domNode)
+    });
+
+    container.appendChild(domNode);
+}
+
 //creating my own react library
 const myReact = {
     createElement,
+    render
 }
 
 // const element = myReact.createElement(
@@ -67,11 +91,38 @@ const myReact = {
 
 /** @jsx myReact.createElement */
 const element = (
-    <div id="foo">
-        <a>bar</a>
-        <b />
+    <div style="background: salmon">
+        <h1>Hello World</h1>
+        <h2 style="text-align:right">from Jaglan</h2>
     </div>
-)
+);
 
 const container = document.getElementById("root");
-ReactDOM.render(element, container);
+// ReactDOM.render(element, container);  ----> rewriting this in step 2 with myReact render function
+
+// Step-2 (render function)
+
+// function render(element, container) {
+//     // creating dom nodes and adding them to DOM
+//     const domNode =
+//         element.type === "TEXT_ELEMENT"
+//             ? document.createTextNode("")
+//             : document.createElement(element.type);
+
+//     const isProperty = key => key !== "children"
+//     Object.keys(element.props)
+//         .filter(isProperty)
+//         .forEach(name => {
+//             dom[name] = element.props[name]
+//         })
+
+//     // each child of element is created its own domNode and attached to its parent
+//     element.props.children.forEach(child => {
+//         render(child, domNode)
+//     });
+
+//     container.appendChild(domNode);
+// }
+
+// add render() to myReact library
+myReact.render(element, container);
