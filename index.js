@@ -24,6 +24,9 @@
 
 // container.appendChild(node);
 
+
+
+
 // Step-1(createElement function)
 
 // This creates my own element that needs to rendered and attached to a parent eventually
@@ -50,28 +53,6 @@ function createTextElement(text) {
             children: []
         },
     }
-}
-
-function render(element, container) {
-    // creating dom nodes and adding them to DOM
-    const domNode =
-        element.type === "TEXT_ELEMENT"
-            ? document.createTextNode("")
-            : document.createElement(element.type);
-
-    const isProperty = key => key !== "children"
-    Object.keys(element.props)
-        .filter(isProperty)
-        .forEach(name => {
-            dom[name] = element.props[name]
-        })
-
-    // each child of element is created its own domNode and attached to its parent
-    element.props.children.forEach(child => {
-        render(child, domNode)
-    });
-
-    container.appendChild(domNode);
 }
 
 //creating my own react library
@@ -102,6 +83,79 @@ const container = document.getElementById("root");
 
 // Step-2 (render function)
 
+function render(element, container) {
+    // creating dom nodes and adding them to DOM
+    const domNode =
+        element.type === "TEXT_ELEMENT"
+            ? document.createTextNode("")
+            : document.createElement(element.type);
+
+    const isProperty = key => key !== "children"
+    Object.keys(element.props)
+        .filter(isProperty)
+        .forEach(name => {
+            domNode[name] = element.props[name]
+        })
+
+    // each child of element is created its own domNode and attached to its parent
+    element.props.children.forEach(child => {
+        render(child, domNode)
+    });
+
+    container.appendChild(domNode);
+}
+
+// add render() to myReact library
+myReact.render(element, container);
+
+// Step - 3 (Concurrent mode)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//// FINAL ////
+
+// // This creates my own element that needs to rendered and attached to a parent eventually
+// function createElement(type, props, ...children) {
+//     return {
+//         type,
+//         props: {
+//             ...props,
+//             children: children.map(child =>
+//                 typeof child === "object"
+//                     ? child
+//                     : createTextElement(child)
+//             ),
+//         },
+//     }
+// }
+
+// // Function to wrap non-obj types of children when creating an element and create a new TEXT_ELEMENT type for them
+// function createTextElement(text) {
+//     return {
+//         type: "TEXT_ELEMENT",
+//         props: {
+//             nodeValue: text,
+//             children: []
+//         },
+//     }
+// }
+
 // function render(element, container) {
 //     // creating dom nodes and adding them to DOM
 //     const domNode =
@@ -113,7 +167,7 @@ const container = document.getElementById("root");
 //     Object.keys(element.props)
 //         .filter(isProperty)
 //         .forEach(name => {
-//             dom[name] = element.props[name]
+//             domNode[name] = element.props[name]
 //         })
 
 //     // each child of element is created its own domNode and attached to its parent
@@ -124,5 +178,19 @@ const container = document.getElementById("root");
 //     container.appendChild(domNode);
 // }
 
-// add render() to myReact library
-myReact.render(element, container);
+// //creating my own react library
+// const myReact = {
+//     createElement,
+//     render
+// }
+
+// /** @jsx myReact.createElement */
+// const element = (
+//     <div style="background: salmon">
+//         <h1>Hello World</h1>
+//         <h2 style="text-align:right">from Jaglan</h2>
+//     </div>
+// );
+
+// const container = document.getElementById("root");
+// myReact.render(element, container);
