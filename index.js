@@ -108,7 +108,62 @@ function render(element, container) {
 // add render() to myReact library
 myReact.render(element, container);
 
-// Step - 3 (Concurrent mode)
+// Step - 3 (Concurrent mode) // To make DOM rendering interuptable and website responsive
+// let nextUnitOfWork = null;
+
+// function workLoop(deadline) {
+//     let shoudlYield = false;
+
+//     while (nextUnitOfWork && !shoudlYield) {
+//         nextUnitOfWork = performNextUnitOfWork(
+//             nextUnitOfWork
+//         )
+
+//         shoudlYield = deadline.timeRemaining() < 1
+//     }
+
+//     if (nextUnitOfWork) {
+//         requestIdleCallback(workLoop)
+//     }
+// }
+
+// requestIdleCallback(workLoop)
+
+// function performNextUnitOfWork(nextUnitOfWork) {
+//     // TODO
+// }
+
+
+// -- Step - 4 -- // (fiber data structure)(Parent -> Child, Child -> Sibling, [if no sibling]current fiber -> parent's sibling[uncle], [if no uncle] parent -> parent)
+
+//creating just DOM node and returning it (no recursive calls to make the dom render like earlier)
+function createDomNode(fiber){
+    const domNode = 
+        fiber.type === "TEXT_ELEMENT"
+        ? document.createTextElement("")
+        : document.createElement(fiber.type)
+        
+    const isProperty = key => key !== "children"
+    Object.keys(fiber.props)
+        .filter(isProperty)
+        .forEach(name =>{
+            domNode[name] = fiber[name]
+        })
+    
+    return domNode
+}
+
+function render(element, container){
+    nextUnitOfWork = {
+        domNode: container,
+        props: {
+            children:[
+                element,
+            ]
+        }
+    }
+}
+
 let nextUnitOfWork = null;
 
 function workLoop(deadline) {
@@ -130,15 +185,10 @@ function workLoop(deadline) {
 requestIdleCallback(workLoop)
 
 function performNextUnitOfWork(nextUnitOfWork) {
-    // TODO
+    // TODO add dom node
+    // TODO create new fibers
+    // TODO return next unit of work
 }
-
-
-
-
-
-
-
 
 
 //// FINAL ////
@@ -169,28 +219,6 @@ function performNextUnitOfWork(nextUnitOfWork) {
 //     }
 // }
 
-// function render(element, container) {
-//     // creating dom nodes and adding them to DOM
-//     const domNode =
-//         element.type === "TEXT_ELEMENT"
-//             ? document.createTextNode("")
-//             : document.createElement(element.type);
-
-//     const isProperty = key => key !== "children"
-//     Object.keys(element.props)
-//         .filter(isProperty)
-//         .forEach(name => {
-//             domNode[name] = element.props[name]
-//         })
-
-//     // each child of element is created its own domNode and attached to its parent
-//     element.props.children.forEach(child => {
-//         render(child, domNode)
-//     });
-
-//     container.appendChild(domNode);
-// }
-
 // //creating my own react library
 // const myReact = {
 //     createElement,
@@ -205,5 +233,56 @@ function performNextUnitOfWork(nextUnitOfWork) {
 //     </div>
 // );
 
+// function createDomNode(fiber){
+//     const domNode = 
+//         fiber.type === "TEXT_ELEMENT"
+//         ? document.createTextElement("")
+//         : document.createElement(fiber.type)
+        
+//     const isProperty = key => key !== "children"
+//     Object.keys(fiber.props)
+//         .filter(isProperty)
+//         .forEach(name =>{
+//             domNode[name] = fiber[name]
+//         })
+    
+//     return domNode
+// }
+
+// function render(element, container){
+//     nextUnitOfWork = {
+//         domNode: container,
+//         props: {
+//             children:[
+//                 element,
+//             ]
+//         }
+//     }
+// }
+
 // const container = document.getElementById("root");
 // myReact.render(element, container);
+
+// let nextUnitOfWork = null;
+
+// function workLoop(deadline) {
+//     let shoudlYield = false;
+
+//     while (nextUnitOfWork && !shoudlYield) {
+//         nextUnitOfWork = performNextUnitOfWork(
+//             nextUnitOfWork
+//         )
+
+//         shoudlYield = deadline.timeRemaining() < 1
+//     }
+
+//     if (nextUnitOfWork) {
+//         requestIdleCallback(workLoop)
+//     }
+// }
+
+// requestIdleCallback(workLoop)
+
+// function performNextUnitOfWork(nextUnitOfWork) {
+//     // TODO
+// }
