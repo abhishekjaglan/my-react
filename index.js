@@ -109,16 +109,29 @@ function render(element, container) {
 myReact.render(element, container);
 
 // Step - 3 (Concurrent mode)
+let nextUnitOfWork = null;
 
+function workLoop(deadline) {
+    let shoudlYield = false;
 
+    while (nextUnitOfWork && !shoudlYield) {
+        nextUnitOfWork = performNextUnitOfWork(
+            nextUnitOfWork
+        )
 
+        shoudlYield = deadline.timeRemaining() < 1
+    }
 
+    if (nextUnitOfWork) {
+        requestIdleCallback(workLoop)
+    }
+}
 
+requestIdleCallback(workLoop)
 
-
-
-
-
+function performNextUnitOfWork(nextUnitOfWork) {
+    // TODO
+}
 
 
 
