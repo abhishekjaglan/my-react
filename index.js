@@ -184,10 +184,52 @@ function workLoop(deadline) {
 
 requestIdleCallback(workLoop)
 
-function performNextUnitOfWork(nextUnitOfWork) {
-    // TODO add dom node
-    // TODO create new fibers
-    // TODO return next unit of work
+function performNextUnitOfWork(fiber) {
+    // add dom node
+    if(!fiber.domNode){
+        fiber.domNode = createDomNode(fiber)
+    }
+
+    if(fiber.parent){
+        fiber.parent.domNode.appendChild(fiber.domNode)
+    }
+
+    // create new fibers
+    const elements = fiber.props.children
+    let index = 0
+    let prevSibling = null
+
+    while(index < elements.length){
+        const element = elements[index]
+
+        const newFiber = {
+            type: element.type,
+            props: element.props,
+            parent: fiber,
+            domNode: null
+        }
+
+        if(index == 0){
+            fiber.child = newFiber
+        }else{
+            prevSibling.sibling = newFiber
+        }
+        
+        prevSibling = newFiber
+        index++
+    }
+    
+    // return next unit of work
+    if(fiber.child){
+        return fiber.child
+    }
+    let nextFiber = fiber
+    while(nextFiber){
+        if(nextFiber.sibling){
+            return nextFiber.sibling
+        }
+        nextFiber = nextFiber.parent
+    }
 }
 
 
