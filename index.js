@@ -137,6 +137,103 @@ myReact.render(element, container);
 // -- Step - 4 -- // (fiber data structure)(Parent -> Child, Child -> Sibling, [if no sibling]current fiber -> parent's sibling[uncle], [if no uncle] parent -> parent)
 
 //creating just DOM node and returning it (no recursive calls to make the dom render like earlier)
+// function createDomNode(fiber){
+//     const domNode = 
+//         fiber.type === "TEXT_ELEMENT"
+//         ? document.createTextElement("")
+//         : document.createElement(fiber.type)
+        
+//     const isProperty = key => key !== "children"
+//     Object.keys(fiber.props)
+//         .filter(isProperty)
+//         .forEach(name =>{
+//             domNode[name] = fiber[name]
+//         })
+    
+//     return domNode
+// }
+
+// function render(element, container){
+//     nextUnitOfWork = {
+//         domNode: container,
+//         props: {
+//             children:[
+//                 element,
+//             ]
+//         }
+//     }
+// }
+
+// let nextUnitOfWork = null;
+
+// function workLoop(deadline) {
+//     let shoudlYield = false;
+
+//     while (nextUnitOfWork && !shoudlYield) {
+//         nextUnitOfWork = performNextUnitOfWork(
+//             nextUnitOfWork
+//         )
+
+//         shoudlYield = deadline.timeRemaining() < 1
+//     }
+
+//     if (nextUnitOfWork) {
+//         requestIdleCallback(workLoop)
+//     }
+// }
+
+// requestIdleCallback(workLoop)
+
+// function performNextUnitOfWork(fiber) {
+//     // add dom node
+//     if(!fiber.domNode){
+//         fiber.domNode = createDomNode(fiber)
+//     }
+
+//     if(fiber.parent){
+//         fiber.parent.domNode.appendChild(fiber.domNode)
+//     }
+
+//     // create new fibers
+//     const elements = fiber.props.children
+//     let index = 0
+//     let prevSibling = null
+
+//     while(index < elements.length){
+//         const element = elements[index]
+
+//         const newFiber = {
+//             type: element.type,
+//             props: element.props,
+//             parent: fiber,
+//             domNode: null
+//         }
+
+//         if(index == 0){
+//             fiber.child = newFiber
+//         }else{
+//             prevSibling.sibling = newFiber
+//         }
+        
+//         prevSibling = newFiber
+//         index++
+//     }
+    
+//     // return next unit of work
+//     if(fiber.child){
+//         return fiber.child
+//     }
+//     let nextFiber = fiber
+//     while(nextFiber){
+//         if(nextFiber.sibling){
+//             return nextFiber.sibling
+//         }
+//         nextFiber = nextFiber.parent
+//     }
+// }
+
+
+// -- STEP - 5 -- //
 function createDomNode(fiber){
     const domNode = 
         fiber.type === "TEXT_ELEMENT"
@@ -153,8 +250,23 @@ function createDomNode(fiber){
     return domNode
 }
 
+function commitRoot(wipRoot){
+    commitWork(wipRoot.child)
+    wipRoot = null; 
+}
+
+function commitWork(fiber){
+    if(!fiber){
+        return
+    }
+    const domNodeParent = fiber.parent.domNode;
+    domNodeParent.appendChild(fiber.domNode);
+    commitWork(fiber.child);
+    commitWork(fiber.sibling);
+}
+
 function render(element, container){
-    nextUnitOfWork = {
+    wipRoot = {
         domNode: container,
         props: {
             children:[
@@ -162,9 +274,11 @@ function render(element, container){
             ]
         }
     }
+    nextUnitOfWork = wipRoot;
 }
 
 let nextUnitOfWork = null;
+let wipRoot = null
 
 function workLoop(deadline) {
     let shoudlYield = false;
@@ -180,6 +294,10 @@ function workLoop(deadline) {
     if (nextUnitOfWork) {
         requestIdleCallback(workLoop)
     }
+
+    if(!nextUnitOfWork && wipRoot){
+        commitRoot();
+    }
 }
 
 requestIdleCallback(workLoop)
@@ -190,9 +308,7 @@ function performNextUnitOfWork(fiber) {
         fiber.domNode = createDomNode(fiber)
     }
 
-    if(fiber.parent){
-        fiber.parent.domNode.appendChild(fiber.domNode)
-    }
+    // we dont update dom for each call of this function as it can be interupted by the browser and will lead to inconsistent rendering of elements and UI , therefore we keep track of the root of fiber tree and commit all of it once the tree is complete
 
     // create new fibers
     const elements = fiber.props.children
@@ -230,8 +346,7 @@ function performNextUnitOfWork(fiber) {
         }
         nextFiber = nextFiber.parent
     }
-}
-
+} 
 
 //// FINAL ////
 
