@@ -365,7 +365,12 @@ function createDomNode(fiber){
     return domNode
 }
 
+function updateDom(domNode, prevProps, nextProps){
+    // TODO
+}
+
 function commitRoot(wipRoot){
+    deletions.forEach(commitWork); // commiting all deletions element for deletion
     commitWork(wipRoot.child);
     currentRoot = wipRoot;
     wipRoot = null; 
@@ -376,7 +381,26 @@ function commitWork(fiber){
         return
     }
     const domNodeParent = fiber.parent.domNode;
-    domNodeParent.appendChild(fiber.domNode);
+    if(
+        fiber.effectTag === "PLACEMENT" &&
+        fiber.domNode != null
+    ){
+        domNodeParent.appendChild(fiber.domNode);
+    }else if(
+        fiber.effectTag === "DELETION"
+    ){
+        domNodeParent.removeChild(fiber.domNode)
+    }else if(
+        fiber.effectTag === "UPDATE" &&
+        fiber.domNode != null
+    ){
+        updateDom(
+            fiber.domNode,
+            fiber.alternate.props,
+            fiber.props
+        )
+    }
+    
     commitWork(fiber.child);
     commitWork(fiber.sibling);
 }
@@ -392,12 +416,14 @@ function render(element, container){
         // adding alternate key : points to the old fiber corresponding to this fiber of the previous commit
         alternate: currentRoot,
     }
+    deletions = [] // array that keeps track of all fibers that need to be deleted
     nextUnitOfWork = wipRoot;
 }
 
 let nextUnitOfWork = null;
 let currentRoot = null;
 let wipRoot = null;
+let deletions = null; 
 
 function workLoop(deadline) {
     let shoudlYield = false;
@@ -464,7 +490,7 @@ function reconcileChildren(wipFiber, elements){
             element && 
             oldFiber.type == element.type
 
-        // when old fibe
+        // when old fiber and new element have same type
         if(sameType){
             newFiber = {
                 type: oldFiber.type,
@@ -476,6 +502,7 @@ function reconcileChildren(wipFiber, elements){
             }
         }
 
+        // when old fiber and new element dont have same type and theres a new element
         if(element && !sameType){
             newFiber = {
                 type: element.type,
@@ -487,10 +514,16 @@ function reconcileChildren(wipFiber, elements){
             }
         }
 
+        // when old fiber and new element dont have same type so we delete oldFiber
         if(oldFiber && !sameType){
             oldFiber.effectTag = "DELETION"
             deletions.push(oldFiber)
         }
+
+        if(oldFiber){
+            oldFiber = oldFiber.sibling
+        }
+
         if(index == 0){
             fiber.child = newFiber
         }else{
